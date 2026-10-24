@@ -29,16 +29,17 @@ Both cores operate on top of a custom hardware-simulation framework (`sim_base`)
 riscv_pipeline_model/
 ├── src/                      # All source code (see src/README.md)
 │   ├── main.py              # Example entry point / manual simulation driver
-│   ├── risc_v/              # RISC-V model (config, modules, cores)
-│   │   ├── base/            # Abstract ICpuSystem interface
-│   │   ├── modules/         # Reusable datapath building blocks
-│   │   │   └── mem/         # IMEM / DMEM / Register File
+│   ├── models/              # CPU microarchitectures
 │   │   ├── pipeline/        # 5-stage pipelined core
 │   │   │   └── stages/      # IF / ID / EX / MEM / WB stages
 │   │   └── single_cycle/    # Single-cycle core
+│   ├── risc_v/              # RISC-V ISA, config, modules, mem interfaces
+│   │   ├── base/            # Abstract ICpuSystem interface
+│   │   ├── mem/             # Register File & memory ports
+│   │   └── modules/         # Reusable datapath building blocks
 │   └── sim_base/            # Hardware simulation framework
 │       ├── core/            # Abstract clock / trigger / combinational interfaces
-│       └── mem/             # Register, BlockMem, AsyncReadMem, MultiWriteMem
+│       └── mem/             # Register, BlockMem, AsyncBlockMem, MultiWriteMem
 ├── tests/                   # Verification suite (see tests/README.md)
 │   ├── cpu/                 # Architectural CPU verification + tracers
 │   ├── modules/             # Unit tests for IMEM / DMEM / RegFile
@@ -92,15 +93,14 @@ with `where = ["src"]`), so the `src` layout is importable directly when
 Drive the full cores programmatically:
 
 ```python
-from risc_v.pipeline import cpu_system as pl
-from risc_v.single_cycle import cpu_system as sc
+from models.pipeline import cpu_system as pl
+from models.single_cycle import cpu_system as sc
 
 pl_cpu = pl.CpuSystem()
 
 pl_cpu.imem.load_program(instructions)   # list[int], 32-bit each
 pl_cpu.dmem.load_data(data)
 pl_cpu.step()                            # advances one clock edge
-
 ```
 
 ---
@@ -111,11 +111,9 @@ To run the test suite, execute:
 
 ```bash
 pytest
-
-
 ```
 
-For advanced test options, custom flags, and details on verification, see [`tests/README.md`](https://www.google.com/search?q=tests/README.md).
+For advanced test options, custom flags, and details on verification, see [`tests/README.md`](tests/README.md).
 
 ---
 
@@ -126,11 +124,9 @@ For advanced test options, custom flags, and details on verification, see [`test
 | `src/README.md` | Source tree overview |
 | `src/risc_v/README.md` | RISC-V model layers |
 | `src/risc_v/modules/README.md` | Datapath building blocks |
-| `src/risc_v/pipeline/README.md` | Pipelined core |
-| `src/risc_v/pipeline/stages/README.md` | Pipeline stages |
-| `src/risc_v/single_cycle/README.md` | Single-cycle core |
+| `src/models/pipeline/README.md` | Pipelined core |
+| `src/models/pipeline/stages/README.md` | Pipeline stages |
+| `src/models/single_cycle/README.md` | Single-cycle core |
 | `src/sim_base/README.md` | Simulation framework |
 | `tests/README.md` | Verification suite |
 | `tests/cpu/README.md` | Architectural CPU tests & tracers |
-
-```

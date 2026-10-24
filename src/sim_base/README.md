@@ -13,13 +13,13 @@ sim_base/
 │   ├── icomb.py           # Combinational logic block interface
 │   └── itrigger.py        # Edge-triggered / sequential primitive interface
 ├── mem/
-│   ├── base_mem.py        # Unified memory foundation class
-│   ├── async_read_mem.py  # Asynchronous-read memory model
-│   ├── multy_write_mem.py # Distributed memory model
+│   ├── base/              # Memory foundation classes (base_block_mem, memory_array)
+│   ├── async_block_mem.py # Asynchronous-read block memory model
 │   ├── block_mem.py       # Synchronous Block RAM model with byte masking
+│   ├── lut_memory.py      # Look-up table memory model
+│   ├── multi_write_mem.py # Multi-write port memory model
 │   └── register.py        # D-type flip-flop register model
 └── clock.py               # Master clock management orchestration
-
 ```
 
 ---

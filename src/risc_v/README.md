@@ -1,15 +1,17 @@
 # `risc_v/` – RISC-V Processor Model
 
-This package implements a 32-bit RISC-V (RV32I) processor model. It is composed
-of three layers:
+This package implements shared components of a 32-bit RISC-V (RV32I) processor model:
 
-1. **Configuration** (`riscv_config.py`, `core.py`) – shared constants, enums,
+1. **Configuration** (`riscv_config.py`) – shared constants, enums,
    control-signal dataclasses, and the `Instruction` bit-field decoder.
-2. **Reusable modules** (`modules/`) – combinational datapath blocks plus memory
-   components that are shared by every core.
-3. **Cores** (`single_cycle/`, `pipeline/`) – two full processor
-   implementations, both conforming to the `ICpuSystem` interface defined in
-   `base/`.
+2. **Reusable modules** (`modules/`) – combinational datapath blocks (ALU, ImmGen,
+   shifter, PC, etc.).
+3. **Memory interfaces** (`mem/`) – Register File, data memory read/write ports,
+   and pipeline-specific memory wrappers.
+
+Processor microarchitectures (`models/single_cycle/`, `models/pipeline/`) are
+implemented in `models/`, both conforming to the `ICpuSystem` interface defined in
+`base/`.
 
 The `base/` sub-package defines the abstract `ICpuSystem` contract that decouples
 verification (in `tests/`) from the concrete microarchitecture.
@@ -19,13 +21,9 @@ verification (in `tests/`) from the concrete microarchitecture.
 | Item | Document | Description |
 | --- | --- | --- |
 | `riscv_config.py` | — | Global constants (`XLEN`, `PC_START_ADDR`, memory widths) and enums/control dataclasses. |
-| `core.py` | — | A minimal flat single-cycle `Core` used by `src/main.py`. |
 | `base/` | [README](base/README.md) | `ICpuSystem` abstract interface. |
-| `modules/` | [README](modules/README.md) | ALU, Shifter, BranchUnit, ImmGen, Decode, PC, memory ports. |
-| `modules/mem/` | [README](modules/mem/README.md) | `InstrMem`, `DataMem`, `RegFile`. |
-| `pipeline/` | [README](pipeline/README.md) | 5-stage pipelined `CpuSystem`. |
-| `pipeline/stages/` | [README](pipeline/stages/README.md) | IF / ID / EX / MEM / WB stages. |
-| `single_cycle/` | [README](single_cycle/README.md) | Single-cycle `CpuSystem`. |
+| `mem/` | — | `RegFile`, `dmem_rd_port`, `dmem_wr_port`, and memory wrappers. |
+| `modules/` | [README](modules/README.md) | ALU, Shifter, BranchComparator, ImmGen, PC. |
 
 ## `riscv_config.py` – Shared Configuration
 
@@ -48,13 +46,9 @@ Central definitions used across all cores:
   `rs2`, `funct3`, `funct7`, `funct7_onebit`, `shamt`. Validates the 32-bit
   range. Provides `__repr__`/`__str__`.
 
-## `core.py` – Flat Demo Core
+## Canonical Cores
 
-`Core` is a compact, sequential (non-pipelined) implementation written for the
-`src/main.py` example. Unlike the full cores, it does not implement the clock/
-buffer/`ICpuSystem` machinery; `tick()` runs fetch → decode → execute → memory →
-write-back inline. It supports loading programs/data from `.hex` files
-(`upload_instr_from_hex`, `upload_data_from_hex`).
-
-> The canonical, microarchitecture-correct cores used by the test suite are
-> `risc_v/single_cycle/cpu_system.py` and `risc_v/pipeline/cpu_system.py`.
+The canonical, microarchitecture-correct cores used by the test suite are
+implemented under `models/`:
+- Single-Cycle Core: `models/single_cycle/cpu_system.py`
+- 5-Stage Pipelined Core: `models/pipeline/cpu_system.py`
