@@ -22,13 +22,14 @@ class BaseBlockMem(MemoryArray):
         return addr
 
     def write(self, addr: int, value: int, byte_we: int | None = None) -> None:
+        if byte_we == 0:
+            return
+
         eff_addr = self._get_effective_addr(addr)
 
         if self._next_write is not None:
             raise RuntimeError("Memory write conflict: multiple writes detected within a single clock cycle")
 
-        if byte_we == 0:
-            return
         if byte_we is None or byte_we == self._byte_mask:
             self._validate_address(eff_addr)
             self._next_write = (eff_addr, value)

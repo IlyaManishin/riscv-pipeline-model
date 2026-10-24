@@ -2,7 +2,7 @@ from .base.memory_array import MemoryArray
 
 class MultiWriteMem(MemoryArray):
     def __init__(self, addr_width: int, cell_size: int):
-        super().__init__(addr_width, cell_size)
+        super().__init__(1 << addr_width, cell_size)
         self._transactions: list[tuple[int, int]] = []
 
     def read(self, addr: int) -> int:
