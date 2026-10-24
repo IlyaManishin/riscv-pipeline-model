@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *.prof
+uv.lock
 
 # Virtual environments
 .venv/
@@ -31,6 +32,7 @@ results.xml
 
 # IDEs and OS
 .vscode/
+.directory
 
 #Temp files
 .$*.bkp
