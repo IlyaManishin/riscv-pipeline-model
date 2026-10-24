@@ -16,7 +16,7 @@ RF_DBG_NUM = 31  # Signature register (x31)
 
 # ====== Trace enable ====== 
 BASE_TRACE_ENABLE = True
-CVD_TRACE_ENABLE = False
+VCD_TRACE_ENABLE = False
 
 # ====== Waveform / CSV dump settings ====== 
 TRACE_DIRNAME = Path("trace")

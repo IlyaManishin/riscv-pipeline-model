@@ -7,7 +7,7 @@ from vcd.writer import Variable
 
 from models.single_cycle.cpu_system import CpuSystem as SC_CpuSystem
 from models.pipeline.cpu_system import CpuSystem as PL_CpuSystem
-from tests.cpu.tests_config import REG_COUNT, XLEN, CVD_TRACE_ENABLE
+from tests.cpu.tests_config import REG_COUNT, XLEN, VCD_TRACE_ENABLE
 from .base_tracers import BaseTracer
 
 
@@ -91,12 +91,11 @@ class CpuVcdTracer(BaseTracer):
                 ("valid", 1), ("pc", 32), ("instr", 32),
                 ("rs1", 5), ("rs2", 5), ("rd", 5),
                 ("rf_rd1", 32), ("rf_rd2", 32), ("imm", 32),
-                ("jump", 1), ("br_eq", 1), ("br_lt", 1),
             ),
             "ex": (
                 ("valid", 1), ("pc", 32), ("instr", 32), ("rd", 5),
                 ("alu_a", 32), ("alu_b", 32), ("alu_result", 32),
-                ("shift_result", 32), ("jump", 1),
+                ("shift_result", 32), ("jump", 1), ("jfpc", 32),
             ),
             "mem": (
                 ("valid", 1), ("pc", 32), ("instr", 32), ("rd", 5),
@@ -157,11 +156,22 @@ class CpuVcdTracer(BaseTracer):
         memory_pc = self._stage_pc(memory.pc4, memory.valid)
         writeback_pc = self._stage_pc(writeback.pc4, writeback.valid)
 
+        id_controls = execute.buff_id_ex.id_controls.read()
+        ex_alu_a = getattr(
+            execute, "alu_in_a",
+            execute.buff_id_ex.rf_rd1.read() if getattr(id_controls, "a_sel", False) else execute.buff_id_ex.pc.read()
+        )
+        ex_alu_b = getattr(
+            execute, "alu_in_b",
+            execute.buff_id_ex.rf_rd2.read() if getattr(id_controls, "b_sel", False) else execute.buff_id_ex.imm.read()
+        )
+        ex_rd = getattr(execute, "rd", execute.buff_id_ex.rd.read())
+
         return {
             "if_valid": fetch.valid,
             "if_pc": fetch_pc,
             "if_instr": self._instr_at(fetch_pc, fetch.valid),
-            "if_stall": fetch.stall_pc,
+            "if_stall": fetch.is_pc_stall,
             "id_valid": decode.valid,
             "id_pc": decode_pc,
             "id_instr": decode.instr.raw if decode.valid and decode.instr is not None else 0,
@@ -171,18 +181,16 @@ class CpuVcdTracer(BaseTracer):
             "id_rf_rd1": decode.rf_rd1,
             "id_rf_rd2": decode.rf_rd2,
             "id_imm": decode.imm,
-            "id_jump": decode.jfid,
-            "id_br_eq": decode.br_eq,
-            "id_br_lt": decode.br_lt,
             "ex_valid": execute.valid,
             "ex_pc": execute_pc,
             "ex_instr": self._instr_at(execute_pc, execute.valid),
-            "ex_rd": execute.rd,
-            "ex_alu_a": execute.alu_in_a,
-            "ex_alu_b": execute.alu_in_b,
-            "ex_alu_result": execute.alures,
-            "ex_shift_result": execute.shift_res,
+            "ex_rd": ex_rd,
+            "ex_alu_a": ex_alu_a,
+            "ex_alu_b": ex_alu_b,
+            "ex_alu_result": execute.alu_out,
+            "ex_shift_result": getattr(execute, "shift_res", execute.alu_out),
             "ex_jump": execute.jfexe,
+            "ex_jfpc": execute.jfpc,
             "mem_valid": memory.valid,
             "mem_pc": memory_pc,
             "mem_instr": self._instr_at(memory_pc, memory.valid),
@@ -190,7 +198,7 @@ class CpuVcdTracer(BaseTracer):
             "mem_addr": memory.dmem_addr,
             "mem_byte_we": memory.dmem_byte_we,
             "mem_wdata": memory.dmem_wdata,
-            "mem_rdata": memory.dmem_rdata,
+            "mem_rdata": writeback.dmem_rdata,
             "wb_valid": writeback.valid,
             "wb_pc": writeback_pc,
             "wb_instr": self._instr_at(writeback_pc, writeback.valid),
@@ -201,10 +209,11 @@ class CpuVcdTracer(BaseTracer):
 
     def _single_cycle_values(self) -> dict[str, int]:
         core = self.cpu._core
+        instr = core.instr
         return {
-            "sc_instr": core.instr.raw if core.instr is not None else 0,
-            "sc_rs1": core.rs1,
-            "sc_rs2": core.rs2,
+            "sc_instr": instr.raw if instr is not None else 0,
+            "sc_rs1": instr.rs1 if instr is not None else 0,
+            "sc_rs2": instr.rs2 if instr is not None else 0,
             "sc_rd": core.rd,
             "sc_rf_rd1": core.rf_rd1,
             "sc_rf_rd2": core.rf_rd2,
@@ -259,6 +268,6 @@ class CpuVcdTracer(BaseTracer):
                     self.stream = None
 
     def _is_trace(self):
-        if not CVD_TRACE_ENABLE:
+        if not VCD_TRACE_ENABLE:
             return False
         return super()._is_trace()

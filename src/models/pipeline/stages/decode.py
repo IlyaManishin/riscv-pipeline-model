@@ -84,7 +84,7 @@ class Decode:
     def flush(self):
         self.buff_id_ex.flush()
 
-        self.is_flush = False
+        self.is_flush = True
 
     def rst(self):
         self.flush()

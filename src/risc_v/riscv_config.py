@@ -135,7 +135,7 @@ class Instruction:
             imm_j = (
                 ((raw >> 11) & 0x100000) |
                 (raw & 0xFF000) |
-                ((raw >> 20) & 0x800) |
+                (((raw >> 20) & 1) << 11) |
                 ((raw >> 20) & 0x7FE)
             )
             if imm_j & 0x100000:
