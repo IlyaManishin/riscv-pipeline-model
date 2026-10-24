@@ -125,7 +125,7 @@ class CpuVcdTracer(BaseTracer):
     def _instr_at(self, pc: int, valid: int | bool = 1) -> int:
         if not valid:
             return 0
-        memory: list[int] = getattr(self.cpu.imem, "_memory")
+        memory: list[int] = self.cpu.imem._memory
         addr_width = self.cpu.imem.get_addr_width()
         index = (int(pc) >> 2) & ((1 << addr_width) - 1)
         return memory[index]
@@ -157,15 +157,9 @@ class CpuVcdTracer(BaseTracer):
         writeback_pc = self._stage_pc(writeback.pc4, writeback.valid)
 
         id_controls = execute.buff_id_ex.id_controls.read()
-        ex_alu_a = getattr(
-            execute, "alu_in_a",
-            execute.buff_id_ex.rf_rd1.read() if getattr(id_controls, "a_sel", False) else execute.buff_id_ex.pc.read()
-        )
-        ex_alu_b = getattr(
-            execute, "alu_in_b",
-            execute.buff_id_ex.rf_rd2.read() if getattr(id_controls, "b_sel", False) else execute.buff_id_ex.imm.read()
-        )
-        ex_rd = getattr(execute, "rd", execute.buff_id_ex.rd.read())
+        ex_alu_a = execute.buff_id_ex.rf_rd1.read() if id_controls.a_sel else execute.buff_id_ex.pc.read()
+        ex_alu_b = execute.buff_id_ex.rf_rd2.read() if id_controls.b_sel else execute.buff_id_ex.imm.read()
+        ex_rd = execute.buff_id_ex.rd.read()
 
         return {
             "if_valid": fetch.valid,
@@ -188,7 +182,7 @@ class CpuVcdTracer(BaseTracer):
             "ex_alu_a": ex_alu_a,
             "ex_alu_b": ex_alu_b,
             "ex_alu_result": execute.alu_out,
-            "ex_shift_result": getattr(execute, "shift_res", execute.alu_out),
+            "ex_shift_result": execute.alu_out,
             "ex_jump": execute.jfexe,
             "ex_jfpc": execute.jfpc,
             "mem_valid": memory.valid,

@@ -50,9 +50,8 @@ fails with a timeout (guards against infinite hazard stalls).
 
 ## CSV / VCD Output
 
-* CSV traces are always generated when `BASE_TRACE_ENABLE` (default `True`); the
+* CSV traces are always generated when `BASE_TRACE_ENABLE` is set to `True` in `tests_config.py` (default `True`); the
   directory is `trace/`.
-* VCD traces are generated when `VCD_TRACE_ENABLE` is truthy (default `False`),
-  controlled by the `VCD_TRACE_ENABLE` environment variable.
+* VCD traces are generated when `VCD_TRACE_ENABLE` is set to `True` in `tests_config.py` (default `False`).
 * `tests/utils/disasm.py` supplies human-readable instruction labels inside the
   pipeline CSV trace.
