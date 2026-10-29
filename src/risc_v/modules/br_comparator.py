@@ -1,4 +1,4 @@
-from risc_v.riscv_config import XLEN
+from risc_v.riscv_config import XLEN, to_signed
 
 
 class BranchComparator:
@@ -27,14 +27,6 @@ class BranchComparator:
         if br_un:
             br_lt = rd1 < rd2
         else:
-            sign_bit = 1 << (XLEN - 1)
-
-            if rd1 & sign_bit:
-                rd1 -= 1 << XLEN
-
-            if rd2 & sign_bit:
-                rd2 -= 1 << XLEN
-
-            br_lt = rd1 < rd2
+            br_lt = to_signed(rd1) < to_signed(rd2)
 
         return br_eq, br_lt

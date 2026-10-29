@@ -14,6 +14,11 @@ DATA_BYTE_NUM = XLEN / 8  # bytes in block with XLEN size
 BYTE_ADDR_WIDTH = int(math.log2(DATA_BYTE_NUM))
 
 
+def to_signed(val: int, bits: int = XLEN) -> int:
+    sign_bit = 1 << (bits - 1)
+    return val - (1 << bits) if val & sign_bit else val
+
+
 class Alu_sel_t(enum.Enum):
     ADD = 0b0000
     SUB = 0b0001

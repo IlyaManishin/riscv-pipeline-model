@@ -1,4 +1,4 @@
-from risc_v.riscv_config import XLEN, Alu_sel_t
+from risc_v.riscv_config import XLEN, Alu_sel_t, to_signed
 
 
 class Alu:
@@ -33,10 +33,8 @@ class Alu:
                 res = a ^ b
 
             case Alu_sel_t.SLT:
-                sign_bit = 1 << (XLEN - 1)
-
-                sa = a - (1 << XLEN) if a & sign_bit else a
-                sb = b - (1 << XLEN) if b & sign_bit else b
+                sa = to_signed(a)
+                sb = to_signed(b)
 
                 res = int(sa < sb)
 

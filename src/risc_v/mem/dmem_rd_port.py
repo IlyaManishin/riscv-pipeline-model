@@ -13,6 +13,9 @@ def dmem_rd_port(
         100 - LBU
         101 - LHU
     """
+    if not (0 <= byte_addr <= 3):
+        raise ValueError(f"Invalid byte offset: {byte_addr}")
+
     byte_data = [
         (dmem_raw >> 0) & 0xFF,
         (dmem_raw >> 8) & 0xFF,
@@ -59,4 +62,4 @@ def dmem_rd_port(
                 return byte_data[0] | (byte_data[1] << 8)
 
         case _:
-            return 0
+            raise ValueError(f"Unsupported load funct3: {funct3:#05b}")

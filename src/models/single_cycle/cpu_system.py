@@ -63,7 +63,7 @@ class CpuSystem(ICpuSystem):
             word_dmem_addr = (dmem_data.addr & 0x0FFFFFFF) >> 2
 
             # Execute memory writes if write enable is active
-            if dmem_data.byte_we != 0:
+            if dmem_data.byte_we != 0 and not self._rst_reg.read():
                 self._dmem.write(word_dmem_addr, dmem_data.wdata,
                                  byte_we=dmem_data.byte_we)
 

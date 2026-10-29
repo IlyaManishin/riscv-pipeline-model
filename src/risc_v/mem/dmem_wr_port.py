@@ -7,6 +7,9 @@ def dmem_wr_port(data: int, byte_offset: int, funct3: int) -> tuple[int, int]:
         001 - SH
         010 - SW
     """
+    if not (0 <= byte_offset <= 3):
+        raise ValueError(f"Invalid byte offset: {byte_offset}")
+
     match funct3:
 
         # SB

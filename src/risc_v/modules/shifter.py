@@ -1,4 +1,4 @@
-from risc_v.riscv_config import XLEN, Shift_sel_t
+from risc_v.riscv_config import XLEN, Shift_sel_t, to_signed
 
 
 class Shifter:
@@ -34,12 +34,7 @@ class Shifter:
 
             # Arithmetic right
             case Shift_sel_t.SRA:
-                sign_bit = 1 << (XLEN - 1)
-
-                if data & sign_bit:
-                    data -= 1 << XLEN
-
-                res = data >> shamt
+                res = to_signed(data) >> shamt
             case Shift_sel_t.ANY:
                 res = 0
 
